@@ -20,6 +20,7 @@ import Container from '@mui/material/Container';
 import Modal from '@mui/material/Modal';
 import TextField from '@mui/material/TextField';
 import TextareaAutosize from '@mui/material/TextareaAutosize';
+import qs from 'qs';
 
 // style css
 import '../styles/services.css';
@@ -33,41 +34,47 @@ const SingleService = () => {
     const { id } = useParams(); // Access the ID from the URL parameter
 
     // get user id
-    var userId = sessionStorage.getItem("user_id");
-    var username = sessionStorage.getItem("user_name");
+    const userId = sessionStorage.getItem("user_id");
+    const username = sessionStorage.getItem("user_name");
 
     const [service, setService] = useState(null);
 
-  const getService = (serviceId) => {
-    axios.get(`http://localhost/brief6/services/${serviceId}`)
-      .then((response) => {
-        console.log(response.data);
-        setService(response.data);
-      })
-      .catch((error) => {
-        console.error(error);
-      });
-  };
-
-  useEffect(() => {
-    getService(id);
-}, [id]);
-
-    // save contract in database
-    const [inputs, setInputs] = useState({})
-
-    const handleChange = (event) =>{
-        const name =event.target.name;
-        const value = event.target.value;
-        setInputs(values => ({ ...values, [name]: value}));
-    }
-
-    const handleSubmit = (event) =>{
-        event.preventDefault();
-        axios.post('http://localhost/react/contractAPI/contract/save', inputs).then(function(response){
-            console.log(response.data);
-        });
+    const getService = (serviceId) => {
+        axios
+            .get(`http://localhost/brief6/services/${serviceId}`)
+            .then((response) => {
+                console.log(response.data);
+                setService(response.data);
+            })
+            .catch((error) => {
+                console.error(error);
+            });
     };
+
+    useEffect(() => {
+        getService(id);
+    }, [id]);
+
+
+    const handleSubmit = (event) => {
+        event.preventDefault();
+
+        const formData = new FormData(event.target);
+        const data = Object.fromEntries(formData.entries());
+
+        const serializedData = qs.stringify(data);
+
+        axios
+            .post('http://localhost/brief6/contractAPI/save', serializedData)
+            .then(function (response) {
+                console.log(response.data);
+            })
+            .catch(function (error) {
+                console.error(error);
+            });
+    };
+
+
 
     // todays date
     const currentDate = new Date().toISOString().split('T')[0];
@@ -155,7 +162,7 @@ const SingleService = () => {
             <ThemeProvider theme={defaultTheme}>
                 <GlobalStyles styles={{ ul: { margin: 0, padding: 0, listStyle: 'none' } }} />
                 <CssBaseline />
-                <Container maxWidth="md" component="main">
+                <Container maxWidth="md" component="main" >
                     <Grid container spacing={5} alignItems="flex-end">
                         {tiers.map((tier) => (
                             // Enterprise card is full width at sm breakpoint
@@ -248,8 +255,8 @@ const SingleService = () => {
                                     defaultValue={username}
                                     variant="standard"
                                     disabled
-                                    onChange={handleChange}
-                                    name={username}
+                                    // onChange={handleChange}
+                                    name='username'
                                 />
                                 <TextField
                                     id="standard-required"
@@ -257,8 +264,8 @@ const SingleService = () => {
                                     defaultValue={`$${selectedTierPrice}`}
                                     variant="standard"
                                     disabled
-                                    onChange={handleChange}
-                                    name='price'
+                                    // onChange={handleChange}
+                                    name='total_cost'
                                 />
                                 <TextField
                                     id="standard-required"
@@ -266,17 +273,18 @@ const SingleService = () => {
                                     defaultValue={service ? service.id : ''}
                                     variant="standard"
                                     type="hidden"
-                                    onChange={handleChange}
-                                    name='serviceid'
+                                    // onChange={handleChange}
+                                    name='service_id'
                                 />
+
                                 <TextField
                                     id="standard-required"
                                     label="user_id"
                                     defaultValue={userId}
                                     variant="standard"
                                     type="hidden"
-                                    onChange={handleChange}
-                                    name={userId}
+                                    // onChange={handleChange}
+                                    name='userId'
                                 />
                                 <TextField
                                     id="standard-required"
@@ -286,8 +294,8 @@ const SingleService = () => {
                                     type="date"
                                     disabled
                                     InputProps={{ classes: { disabled: 'disabled-input' } }}
-                                    onChange={handleChange}
-                                    name='startdate'
+                                    // onChange={handleChange}
+                                    name='start_date'
                                 />
                                 <TextField
                                     id="standard-required"
@@ -297,16 +305,16 @@ const SingleService = () => {
                                     type="date"
                                     disabled
                                     InputProps={{ classes: { disabled: 'disabled-input' } }}
-                                    onChange={handleChange}
-                                    name='expiredate'
+                                    // onChange={handleChange}
+                                    name='expire_date'
                                 />
                                 <TextareaAutosize
                                     id="standard-multiline-flexible"
                                     aria-label="Description"
                                     defaultValue="I need IT services for my small business. We have a network of 10 computers and require assistance with software installation, network security, and regular system maintenance."
-                                    minRows={4}
+                                    minRows={7}
                                     disabled
-                                    onChange={handleChange}
+                                    // onChange={handleChange}
                                     name='description'
                                 />
                                 <Button variant="outlined" onClick={handleSubmit}>Submit Contract</Button>
